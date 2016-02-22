@@ -1,0 +1,5 @@
+{
+root:"./resources",
+port:8090,
+cached:true
+}

@@ -14,10 +14,15 @@ import java.io.BufferedReader;
 public class main {
 
     public static void main(String[] args) throws Throwable {
-        configuration config = new configuration(true,"./resources",8081);
-        resourcesService rs = new resourcesService(config);
 
-        System.out.print("sass");
+        if (args.length >= 1) {
+            configurationProvider rs = new configurationProvider(args[0]);
+        }
+
+        resourcesProvider rs = new resourcesProvider(config);
+
+        configuration config = new configuration(true,"./resources",8081);
+
         ServerSocket ss = new ServerSocket(8081);
         while (true) {
             Socket s = ss.accept();
@@ -51,7 +56,6 @@ public class main {
                     //do nothing
                 }
             }
-            System.err.println("Client processing finished");
         }
 
         private void writeResponse(String s) throws Throwable {

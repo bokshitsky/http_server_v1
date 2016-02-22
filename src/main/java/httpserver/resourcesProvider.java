@@ -7,14 +7,14 @@ import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.HashMap;
 
-public class resourcesService {
+public class resourcesProvider {
 
 
     private HashMap<String,byte[]> Cache;
     private boolean useCache;
     private Path rootDir;
 
-    public resourcesService(configuration config) {
+    public resourcesProvider(configuration config) {
         rootDir = config.rootDir;
         useCache = config.cached;
 
@@ -47,7 +47,7 @@ public class resourcesService {
         }
     }
 
-
+    //Method loads file from disk to byte array
     private byte[] readResourceBytes (String Resource)  {
         Path data = Paths.get(rootDir.toString(),Resource);
         try {
@@ -58,8 +58,9 @@ public class resourcesService {
     }
 
 
+    //method is called every time any file on the server is updated.
+    //note: better to update only new or changed files.
     private void reloadCache() {
-
         synchronized (this.Cache) {
             this.Cache = new HashMap<String, byte[]>();
             try {
@@ -79,11 +80,10 @@ public class resourcesService {
     }
 
 
-
+    //Method start separate watching thread looking for file system update.
+    //If resource folder is updated - cache is reloaded
     private void startCacheValidation() throws IOException {
-
-        resourcesService service = this;
-
+        resourcesProvider service = this;
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -101,7 +101,6 @@ public class resourcesService {
                     WatchKey key = null;
                     try {
                         key = watcher.take();
-
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -111,7 +110,6 @@ public class resourcesService {
                     }
                     key.reset();
                 }
-
             }
         }).start();
     }
