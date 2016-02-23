@@ -6,6 +6,7 @@ import httpserver.requests.HttpRequestParser;
 import httpserver.requests.HttpRequest;
 import httpserver.resources.NaiveCachingResourceProvider;
 import httpserver.responses.HttpResponce;
+import httpserver.responses.HttpRequestProcessor;
 
 
 import java.io.*;
@@ -16,6 +17,8 @@ public class server {
 
     private NaiveCachingResourceProvider rp;
     private configuration config;
+
+
 
     public server(configuration config) {
         this.config = config;
@@ -51,6 +54,7 @@ public class server {
         private OutputStream os;
         private final NaiveCachingResourceProvider rp;
 
+
         private SocketProcessor(Socket s, NaiveCachingResourceProvider rp) throws IOException {
             this.s = s;
             this.is = s.getInputStream();
@@ -60,16 +64,23 @@ public class server {
 
         public void run() {
             HttpRequest req = null;
+            HttpResponce res = null;
+            HttpRequestParser reqParser = new HttpRequestParser();
+            HttpRequestProcessor resProc = new HttpRequestProcessor(rp);
+
             try {
-                req = parseRequest();
+                req = new HttpRequestParser().parseRequestParams(this.is).getRequestObject();
             } catch (IOException e) {
-                e.printStackTrace();
+                e.printStackTrace(); //for simplicity
             }
 
             try {
-                writeResponse(getResponce(req));
+                res = resProc.ProcessRequest(req);
+                writeResponse(resProc.getResponceBytes(res));
+
             } catch (IOException e) {
                 e.printStackTrace();
+
             }  finally {
                 try {
                     s.close();
@@ -80,52 +91,9 @@ public class server {
             }
         }
 
-        //PARSE HTTP REQUEST.
-        private HttpRequest parseRequest() throws IOException{
-
-            HttpRequestParser parser = new HttpRequestParser();
-            parser.parseRequest(is);
-
-            HttpRequest req = new HttpRequest();
-            req.resource = parser.requestParams.get("RESOURCE").substring(1);
-            req.method = parser.requestParams.get("METHOD");
-            req.AcceptCharset = parser.requestParams.get("Accept-Charset");
-            if (parser.requestParams.containsKey("If-Match")) {
-                req.etag = parser.requestParams.get("If-Match").replace("\"","");
-                //etag should no contain " symbol
-            }
-            return req;
-        }
-
-        //PROCESS HTTP REQUEST TO HTTP RESPONSE
-        private HttpResponce getResponce(HttpRequest req) {
-
-            HttpResponce res = new HttpResponce();
-
-            res.Code = 404;
-
-            if (!req.method.equals("GET")) {
-                System.out.println(req.method.length());
-                res.Code = 405;
-                return res;
-            }
-
-            byte[] resourceBytes = rp.getResource(req.resource);
-            if (resourceBytes == null) {
-                return res;
-            }
-            res.Content = resourceBytes;
-            res.setContentTypeBySuffix(req.resource);
-            res.charset = "utf-8";
-            res.Code = 200;
-
-            return res;
-        }
-
-        private void writeResponse(HttpResponce res) throws IOException {
-            os.write(res.getBytes());
+        private void writeResponse(byte[] resBytes) throws IOException {
+            os.write(resBytes);
             os.flush();
         }
-
     }
 }

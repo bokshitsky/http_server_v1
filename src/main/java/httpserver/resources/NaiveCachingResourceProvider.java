@@ -4,25 +4,32 @@ package httpserver.resources;
 import httpserver.configurations.configuration;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.file.*;
 
 import java.nio.file.attribute.BasicFileAttributes;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 
 
-public class NaiveCachingResourceProvider implements IResourceProvider{
+public class NaiveCachingResourceProvider {
 
     private HashMap<String,byte[]> Cache;
+    private HashMap<String, String> ETagCache;
     private boolean useCache;
     private Path rootDir;
+    public Charset textFilesCharset;
 
 
     public NaiveCachingResourceProvider(configuration config) {
         rootDir = config.rootDir;
         useCache = config.cached;
+        textFilesCharset = config.textFilesCharset;
 
         if (useCache){
             this.Cache = new HashMap<String, byte[]>();
+            this.ETagCache = new HashMap<String, String>();
             try {
                 reloadCache();
                 startCacheValidation();
@@ -41,7 +48,7 @@ public class NaiveCachingResourceProvider implements IResourceProvider{
 
         synchronized (this.Cache) {
             if (!this.Cache.containsKey(resourceName)) {
-                //caching is ON, but Cache does not contain resource for some reason
+                //caching is ON, but Cache does not contain Resource for some reason
                 return this.Cache.get(resourceName);
             } else {
                 return readResourceBytes(resourceName);
@@ -49,15 +56,45 @@ public class NaiveCachingResourceProvider implements IResourceProvider{
         }
     }
 
-    //Method takes resource name and gets bytes from disk
+    public String getResourceETag(String resourceName) {
+
+        if (!useCache) { //No caching
+            return getMD5ETag(readResourceBytes(resourceName));
+        }
+
+        synchronized (this.Cache) {
+            if (!this.Cache.containsKey(resourceName)) {
+                //caching is ON, but Cache does not contain Resource for some reason
+                return this.ETagCache.get(resourceName);
+            } else {
+                return getMD5ETag(readResourceBytes(resourceName));
+            }
+        }
+    }
+
+
+
+    private String getMD5ETag(byte[] content){
+        String result = null;
+        try {
+            result = new String(MessageDigest.getInstance("MD5").digest(content),Charset.forName("ascii"));
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
+
+
+    //Method takes Resource name and gets bytes from disk
     private byte[] readResourceBytes (String Resource)  {
         Path data = Paths.get(rootDir.toString(),Resource);
         try {
             return Files.readAllBytes(data);
-        } catch (IOException e) {
+        } catch (Throwable e) {
             return null;
         }
     }
+
 
     //method is called every time any file on the server is updated.
     //note: better to update only new or changed files.
@@ -69,7 +106,9 @@ public class NaiveCachingResourceProvider implements IResourceProvider{
                     @Override
                     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
                         String resName = rootDir.relativize(file).toString();
-                        Cache.put(resName.replace("\\","/"), readResourceBytes(resName));
+                        byte[] bytes = readResourceBytes(resName);
+                        Cache.put(resName.replace("\\","/"), bytes);
+                        ETagCache.put(resName.replace("\\","/"), getMD5ETag(bytes));
                         return FileVisitResult.CONTINUE;
                     }
                 });
@@ -81,7 +120,7 @@ public class NaiveCachingResourceProvider implements IResourceProvider{
     }
 
     //Method start separate watching thread looking for file system update.
-    //If resource folder is updated - cache is reloaded
+    //If Resource folder is updated - cache is reloaded
     private void startCacheValidation() throws IOException {
         NaiveCachingResourceProvider service = this;
         new Thread(new Runnable() {

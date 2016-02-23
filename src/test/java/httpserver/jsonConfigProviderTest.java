@@ -14,7 +14,7 @@ public class jsonConfigProviderTest {
     @Before
     public void setUp() throws Exception {
         //Right now test is based on file "configuration.txt" from project root dir.
-        provider = new JsonConfigProvider("configuration.txt");
+        provider = new JsonConfigProvider("config.txt");
     }
 
     @Test
