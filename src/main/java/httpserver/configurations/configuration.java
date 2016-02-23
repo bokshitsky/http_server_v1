@@ -1,4 +1,4 @@
-package httpserver;
+package httpserver.configurations;
 
 
 import java.io.File;

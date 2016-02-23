@@ -25,16 +25,15 @@
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
             <version>20160212</version>
+            <scope>compile</scope>
         </dependency>
 		
-
-
     </dependencies>
 
     <build>
         <plugins>
-            <plugin>
-                <!-- Build an executable JAR -->
+            <!--<plugin>
+                &lt;!&ndash; Build an executable JAR &ndash;&gt;
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
                 <version>2.4</version>
@@ -43,11 +42,42 @@
                     <finalName>runhttp</finalName>
                     <archive>
                         <manifest>
+                            <addClasspath>true</addClasspath>
+                            <classpathPrefix>lib/</classpathPrefix>
                             <mainClass>httpserver.main</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
+            </plugin>-->
+
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>2.4.3</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <finalName>httpserver</finalName>
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <manifestEntries>
+                                        <Main-Class>httpserver.main</Main-Class>
+                                    </manifestEntries>
+                                </transformer>
+                            </transformers>
+                            <outputDirectory>target</outputDirectory>
+                            <!--<outputFile>runhttp.jar</outputFile>-->
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
+
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>

@@ -1,5 +1,7 @@
-package httpserver;
+package httpserver.resources;
 
+
+import httpserver.configurations.configuration;
 
 import java.io.IOException;
 import java.nio.file.*;
@@ -7,9 +9,8 @@ import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.HashMap;
 
+
 public class resourcesProvider {
-
-
     private HashMap<String,byte[]> Cache;
     private boolean useCache;
     private Path rootDir;
@@ -27,9 +28,7 @@ public class resourcesProvider {
                 System.err.println("Can't start caching for some reason. Please check if resource folder exists.");
                 System.exit(-1);
             }
-
         }
-
     }
 
     public byte[] getResource(String resourceName) {
@@ -57,7 +56,6 @@ public class resourcesProvider {
         }
     }
 
-
     //method is called every time any file on the server is updated.
     //note: better to update only new or changed files.
     private void reloadCache() {
@@ -72,13 +70,12 @@ public class resourcesProvider {
                         return FileVisitResult.CONTINUE;
                     }
                 });
-                System.out.print("Cache updated.");
+                System.out.println("CACHE WAS UPDATED");
             } catch (IOException e) {
                 System.err.println("Error during cache updating");
             }
         }
     }
-
 
     //Method start separate watching thread looking for file system update.
     //If resource folder is updated - cache is reloaded

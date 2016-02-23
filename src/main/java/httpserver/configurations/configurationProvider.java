@@ -1,6 +1,7 @@
-package httpserver;
+package httpserver.configurations;
 
 
+import httpserver.configurations.configuration;
 import org.json.JSONObject;
 
 import java.io.IOException;
@@ -22,7 +23,7 @@ public class configurationProvider {
         this.filename = null;
     }
 
-    public configuration getDefaultConfig() {
+    public static configuration getDefaultConfig() {
         return new configuration(CACHED,DEFAULT_FOLDER,PORT);
     }
 

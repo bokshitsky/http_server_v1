@@ -1,6 +1,7 @@
 package httpserver;
 
-import junit.framework.Assert;
+import httpserver.configurations.configuration;
+import httpserver.configurations.configurationProvider;
 import org.junit.Before;
 import org.junit.Test;
 
