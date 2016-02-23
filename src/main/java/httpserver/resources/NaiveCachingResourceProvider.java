@@ -10,12 +10,14 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.HashMap;
 
 
-public class resourcesProvider {
+public class NaiveCachingResourceProvider implements IResourceProvider{
+
     private HashMap<String,byte[]> Cache;
     private boolean useCache;
     private Path rootDir;
 
-    public resourcesProvider(configuration config) {
+
+    public NaiveCachingResourceProvider(configuration config) {
         rootDir = config.rootDir;
         useCache = config.cached;
 
@@ -25,7 +27,7 @@ public class resourcesProvider {
                 reloadCache();
                 startCacheValidation();
             } catch (IOException e) {
-                System.err.println("Can't start caching for some reason. Please check if resource folder exists.");
+                System.err.println("Can't start caching for some reason. Please check if required folder exists.");
                 System.exit(-1);
             }
         }
@@ -38,7 +40,8 @@ public class resourcesProvider {
         }
 
         synchronized (this.Cache) {
-            if (!this.Cache.containsKey(resourceName)) { //caching is ON, but Cache does not contain resource
+            if (!this.Cache.containsKey(resourceName)) {
+                //caching is ON, but Cache does not contain resource for some reason
                 return this.Cache.get(resourceName);
             } else {
                 return readResourceBytes(resourceName);
@@ -46,7 +49,7 @@ public class resourcesProvider {
         }
     }
 
-    //Method loads file from disk to byte array
+    //Method takes resource name and gets bytes from disk
     private byte[] readResourceBytes (String Resource)  {
         Path data = Paths.get(rootDir.toString(),Resource);
         try {
@@ -80,7 +83,7 @@ public class resourcesProvider {
     //Method start separate watching thread looking for file system update.
     //If resource folder is updated - cache is reloaded
     private void startCacheValidation() throws IOException {
-        resourcesProvider service = this;
+        NaiveCachingResourceProvider service = this;
         new Thread(new Runnable() {
             @Override
             public void run() {

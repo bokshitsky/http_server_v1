@@ -3,24 +3,23 @@ package httpserver;
 
 import httpserver.configurations.configuration;
 import httpserver.requests.HttpRequestParser;
-import httpserver.requests.httprequest;
-import httpserver.resources.resourcesProvider;
-import httpserver.responses.httpresponse;
+import httpserver.requests.HttpRequest;
+import httpserver.resources.NaiveCachingResourceProvider;
+import httpserver.responses.HttpResponce;
 
 
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.nio.charset.Charset;
 
 public class server {
 
-    private resourcesProvider rp;
+    private NaiveCachingResourceProvider rp;
     private configuration config;
 
     public server(configuration config) {
         this.config = config;
-        this.rp = new resourcesProvider(config);
+        this.rp = new NaiveCachingResourceProvider(config);
     }
 
     public void start()  {
@@ -50,9 +49,9 @@ public class server {
         private Socket s;
         private InputStream is;
         private OutputStream os;
-        private final resourcesProvider rp;
+        private final NaiveCachingResourceProvider rp;
 
-        private SocketProcessor(Socket s, resourcesProvider rp) throws IOException {
+        private SocketProcessor(Socket s, NaiveCachingResourceProvider rp) throws IOException {
             this.s = s;
             this.is = s.getInputStream();
             this.os = s.getOutputStream();
@@ -60,7 +59,7 @@ public class server {
         }
 
         public void run() {
-            httprequest req = null;
+            HttpRequest req = null;
             try {
                 req = parseRequest();
             } catch (IOException e) {
@@ -81,12 +80,13 @@ public class server {
             }
         }
 
-        private httprequest parseRequest() throws IOException{
+        //PARSE HTTP REQUEST.
+        private HttpRequest parseRequest() throws IOException{
 
             HttpRequestParser parser = new HttpRequestParser();
             parser.parseRequest(is);
 
-            httprequest req = new httprequest();
+            HttpRequest req = new HttpRequest();
             req.resource = parser.requestParams.get("RESOURCE").substring(1);
             req.method = parser.requestParams.get("METHOD");
             req.AcceptCharset = parser.requestParams.get("Accept-Charset");
@@ -97,9 +97,10 @@ public class server {
             return req;
         }
 
-        private httpresponse getResponce(httprequest req) {
+        //PROCESS HTTP REQUEST TO HTTP RESPONSE
+        private HttpResponce getResponce(HttpRequest req) {
 
-            httpresponse res = new httpresponse();
+            HttpResponce res = new HttpResponce();
 
             res.Code = 404;
 
@@ -114,27 +115,17 @@ public class server {
                 return res;
             }
             res.Content = resourceBytes;
-            res.ContentType = "text/html";
+            res.setContentTypeBySuffix(req.resource);
             res.charset = "utf-8";
             res.Code = 200;
 
             return res;
         }
 
-        private void writeResponse(httpresponse res) throws IOException {
-
-            /*String response = "HTTP/1.1 200 OK\r\n" +
-                    "Server: YarServer/2009-09-09\r\n" +
-                    "Content-Type: text/html\r\n" +
-                    "Content-Length: " + 0 + "\r\n" +
-                    "Connection: close\r\n\r\n";
-            String result = response + s;*/
+        private void writeResponse(HttpResponce res) throws IOException {
             os.write(res.getBytes());
             os.flush();
         }
-
-
-
 
     }
 }

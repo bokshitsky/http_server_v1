@@ -2,10 +2,9 @@ package httpserver.responses;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.util.HashMap;
 
-public class httpresponse {
+public class HttpResponce {
 
 
     public static final HashMap<Integer,String> Messages = getCodesMessages();
@@ -34,8 +33,9 @@ public class httpresponse {
         return Map;
     }
 
-    public httpresponse setContentTypeBySuffix(String resource) {
-        String suffix = Suffixes.get(resource.substring(resource.length()-4));
+    public HttpResponce setContentTypeBySuffix(String resource) {
+        String suffix = resource.substring(resource.lastIndexOf(".")).toLowerCase();
+        this.ContentType = Suffixes.get(suffix);
         return this;
     }
 

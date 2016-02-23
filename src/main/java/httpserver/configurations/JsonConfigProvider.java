@@ -1,30 +1,29 @@
 package httpserver.configurations;
 
 
-import httpserver.configurations.configuration;
 import org.json.JSONObject;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
-public class configurationProvider {
+public class JsonConfigProvider implements IConfigProvider {
 
     private final String filename;
     public static String DEFAULT_FOLDER = "./resources";
-    public static boolean CACHED = true;
-    public static int PORT = 8081;
+    public static boolean DEFAULT_CACHING = true;
+    public static int DEFAULT_PORT = 8081;
 
-    public configurationProvider(String filename) {
+    public JsonConfigProvider(String filename) {
         this.filename = filename;
     }
 
-    public configurationProvider() {
+    public JsonConfigProvider() {
         this.filename = null;
     }
 
     public static configuration getDefaultConfig() {
-        return new configuration(CACHED,DEFAULT_FOLDER,PORT);
+        return new configuration(DEFAULT_CACHING,DEFAULT_FOLDER, DEFAULT_PORT);
     }
 
 
@@ -37,7 +36,7 @@ public class configurationProvider {
                     json.getInt("port"));
         } catch (IOException e) {
             System.err.println("Can't load specified configuration file: " + this.filename);
-            System.err.println("Default config is used instead");
+            System.err.println("Default configuration is used instead");
             return this.getDefaultConfig();
         }
 

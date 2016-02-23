@@ -2,16 +2,7 @@ package httpserver;
 
 
 import httpserver.configurations.configuration;
-import httpserver.configurations.configurationProvider;
-import httpserver.resources.resourcesProvider;
-
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.InputStreamReader;
-import java.io.BufferedReader;
-import java.nio.charset.Charset;
+import httpserver.configurations.JsonConfigProvider;
 
 
 public class main {
@@ -20,10 +11,10 @@ public class main {
 
         configuration config;
         if (args.length >= 1) {
-            configurationProvider cp = new configurationProvider(args[0]);
-            config = cp.getConfig();
+            JsonConfigProvider provider = new JsonConfigProvider(args[0]);
+            config = provider.getConfig();
         } else{
-            config = configurationProvider.getDefaultConfig();
+            config = JsonConfigProvider.getDefaultConfig();
         }
 
         new server(config).start();
