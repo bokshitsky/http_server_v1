@@ -105,7 +105,9 @@ public class HttpRequestProcessor {
                     headerText += "\r\n";
                 }
                 headerText += "Content-Length: " + res.BodyContent.length + "\r\n";
-                headerText += "ETag: " + "\"" + res.ETag + "\"" + "\r\n";
+                if (res.ETag!=null) {
+                    headerText += "ETag: " + "\"" + res.ETag + "\"" + "\r\n";
+                }
                 headerText += "Connection: close\r\n\r\n";
                 byte[] headerBytes = headerText.getBytes();
                 ByteArrayOutputStream outputStream = new ByteArrayOutputStream(headerBytes.length + res.BodyContent.length);
