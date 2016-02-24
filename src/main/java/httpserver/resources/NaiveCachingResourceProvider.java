@@ -63,11 +63,13 @@ public class NaiveCachingResourceProvider {
         }
 
         synchronized (this.Cache) {
-            if (!this.Cache.containsKey(resourceName)) {
-                //caching is ON, but Cache does not contain Resource for some reason
-                return this.ETagCache.get(resourceName);
-            } else {
-                return getMD5ETag(readResourceBytes(resourceName));
+            synchronized (this.ETagCache) {
+                if (!this.Cache.containsKey(resourceName)) {
+                    //caching is ON, but Cache does not contain Resource for some reason
+                    return this.ETagCache.get(resourceName);
+                } else {
+                    return getMD5ETag(readResourceBytes(resourceName));
+                }
             }
         }
     }
@@ -76,12 +78,21 @@ public class NaiveCachingResourceProvider {
 
     private String getMD5ETag(byte[] content){
         String result = null;
+        byte[] bytes = null;
         try {
-            result = new String(MessageDigest.getInstance("MD5").digest(content),Charset.forName("ascii"));
+            bytes = MessageDigest.getInstance("MD5").digest(content);
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
-        return result;
+
+        StringBuffer hexString = new StringBuffer();
+        for (int i=0;i<bytes.length;i++) {
+            String hex=Integer.toHexString(0xff & bytes[i]);
+            if(hex.length()==1) hexString.append('0');
+            hexString.append(hex);
+        }
+
+        return hexString.toString();
     }
 
 
@@ -100,21 +111,24 @@ public class NaiveCachingResourceProvider {
     //note: better to update only new or changed files.
     private void reloadCache() {
         synchronized (this.Cache) {
-            this.Cache = new HashMap<String, byte[]>();
-            try {
-                Files.walkFileTree(rootDir, new SimpleFileVisitor<Path>() {
-                    @Override
-                    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                        String resName = rootDir.relativize(file).toString();
-                        byte[] bytes = readResourceBytes(resName);
-                        Cache.put(resName.replace("\\","/"), bytes);
-                        ETagCache.put(resName.replace("\\","/"), getMD5ETag(bytes));
-                        return FileVisitResult.CONTINUE;
-                    }
-                });
-                System.out.println("CACHE WAS UPDATED");
-            } catch (IOException e) {
-                System.err.println("Error during cache updating");
+            synchronized (this.ETagCache) {
+                this.Cache = new HashMap<String, byte[]>();
+                this.ETagCache = new HashMap<String, String>();
+                    try {
+                        Files.walkFileTree(rootDir, new SimpleFileVisitor<Path>() {
+                            @Override
+                            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                                String resName = rootDir.relativize(file).toString();
+                                byte[] bytes = readResourceBytes(resName);
+                                Cache.put(resName.replace("\\","/"), bytes);
+                                ETagCache.put(resName.replace("\\","/"), getMD5ETag(bytes));
+                                return FileVisitResult.CONTINUE;
+                            }
+                        });
+                        System.out.println("CACHE WAS UPDATED");
+                    } catch (IOException e) {
+                        System.err.println("Error during cache updating");
+                }
             }
         }
     }

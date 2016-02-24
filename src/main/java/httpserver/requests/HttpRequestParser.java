@@ -46,6 +46,7 @@ public class HttpRequestParser {
         req.AcceptCharset = requestParams.get("Accept-Charset");
 
         if (requestParams.containsKey("If-Match")) {
+            req.IfMatch = true;
             req.ETag = requestParams.get("If-Match").replace("\"","");
             //ETag should no contain " symbol
         }

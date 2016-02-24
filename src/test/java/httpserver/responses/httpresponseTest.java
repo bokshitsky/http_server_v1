@@ -15,6 +15,7 @@ public class httpresponseTest {
 
     @Test
     public void testGetHeader() throws Exception {
+        //TEST WAS WRITTEN ONLY FOR CORRECT OUTPUT VALIDATION OF RESPONCE PROCESSOR
         NaiveCachingResourceProvider rp =  Mockito.mock(NaiveCachingResourceProvider.class);
         HttpRequestProcessor proc = new HttpRequestProcessor(rp);
 
@@ -22,7 +23,7 @@ public class httpresponseTest {
         HttpResponce res = new HttpResponce();
         res.Code = 200;
         res.RequestedCharset = "UTF-8";
-        res.BodyContent = "sassaassS".getBytes();
+        res.BodyContent = "CONTENT!!!".getBytes();
         res.ContentType = "text/html";
         System.out.println(new String(proc.getResponceBytes(res)));
 

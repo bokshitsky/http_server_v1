@@ -66,9 +66,9 @@ public class HttpRequestProcessor {
                 return res;
             }
 
-            if (req.IfMatch!=null) {
+            if (req.IfMatch) {
                 String ActualETag = rp.getResourceETag(req.Resource);
-                String RequestETag = req.ETag.replace("\"", "");
+                String RequestETag = req.ETag;
                 if (!ActualETag.equals(RequestETag)) {
                     res.Code = 412;
                     return res;
@@ -79,7 +79,7 @@ public class HttpRequestProcessor {
             res.RequestedCharset = req.AcceptCharset != null ? req.AcceptCharset : rp.textFilesCharset.name().toLowerCase();
             res.ETag = rp.getResourceETag(req.Resource);
             if (!res.RequestedCharset.toLowerCase().equals(rp.textFilesCharset.name().toLowerCase())){
-                res.BodyContent = new String(res.BodyContent,rp.textFilesCharset).getBytes(res.RequestedCharset);
+                res.BodyContent = new String(resourceBytes,rp.textFilesCharset).getBytes(res.RequestedCharset);
             }else{
                 res.BodyContent = resourceBytes;
             }
@@ -105,7 +105,7 @@ public class HttpRequestProcessor {
                     headerText += "\r\n";
                 }
                 headerText += "Content-Length: " + res.BodyContent.length + "\r\n";
-                headerText += "ETag: " + "\"" + res.ETag + "\"";
+                headerText += "ETag: " + "\"" + res.ETag + "\"" + "\r\n";
                 headerText += "Connection: close\r\n\r\n";
                 byte[] headerBytes = headerText.getBytes();
                 ByteArrayOutputStream outputStream = new ByteArrayOutputStream(headerBytes.length + res.BodyContent.length);
@@ -123,7 +123,5 @@ public class HttpRequestProcessor {
                 return headerText.getBytes();
 
         }
-
     }
-
 }

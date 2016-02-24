@@ -36,7 +36,7 @@ public class JsonConfigProvider implements IConfigProvider {
                     json.getBoolean("cached"),
                     json.getString("root"),
                     json.getInt("port"),
-                    Charset.forName(json.getString("RequestedCharset")));
+                    Charset.forName(json.getString("charset")));
         } catch (IOException e) {
             System.err.println("Can't load specified configuration file: " + this.filename);
             System.err.println("Default configuration is used instead");
