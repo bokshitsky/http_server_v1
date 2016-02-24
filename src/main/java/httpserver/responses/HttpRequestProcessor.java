@@ -119,6 +119,8 @@ public class HttpRequestProcessor {
                 return outputStream.toByteArray();
 
             default:
+                headerText += "Content-Type: text/plain\r\n";
+                headerText += "Content-Length: 0\r\n";
                 headerText += "Connection: close\r\n\r\n";
                 return headerText.getBytes();
 
