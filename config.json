@@ -1,6 +1,6 @@
 {
 root:"./resources",
 port:8090,
-cached:false,
+cached:true,
 charset:UTF-8
 }

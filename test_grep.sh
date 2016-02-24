@@ -1,3 +1,3 @@
 mvn clean package
-java -jar target/httpserver.jar config.txt
+java -jar target/httpserver.jar config.json
 

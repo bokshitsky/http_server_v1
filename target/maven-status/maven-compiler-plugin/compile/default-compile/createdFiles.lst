@@ -1,0 +1,14 @@
+httpserver\resources\NaiveCachingResourceProvider.class
+httpserver\resources\NaiveCachingResourceProvider$1.class
+httpserver\responses\HttpRequestProcessor.class
+httpserver\requests\HttpRequestParser.class
+httpserver\responses\HttpResponce.class
+httpserver\resources\NaiveCachingResourceProvider$2.class
+httpserver\server$SocketProcessor.class
+httpserver\configurations\IConfigProvider.class
+httpserver\configurations\JsonConfigProvider.class
+httpserver\requests\HttpRequest.class
+httpserver\server$1.class
+httpserver\server.class
+httpserver\configurations\configuration.class
+httpserver\main.class
